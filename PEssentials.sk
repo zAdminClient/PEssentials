@@ -1,0 +1,225 @@
+#  _____                  _         _____           _       _       
+# |  __ \                | |       / ____|         (_)     | |      
+# | |__) |   _ _ __ _ __ | | ___  | (___   ___ _ __ _ _ __ | |_ ___ 
+# |  ___/ | | | '__| '_ \| |/ _ \  \___ \ / __| '__| | '_ \| __/ __|
+# | |   | |_| | |  | |_) | |  __/  ____) | (__| |  | | |_) | |_\__ \
+# |_|    \__,_|_|  | .__/|_|\___| |_____/ \___|_|  |_| .__/ \__|___/
+#                  | |                               | |            
+#                  |_|                               |_|              
+# | Purple Essentials
+# | Caso tenha alguma duvida utlize nossa comunidade: https://discord.gg/SCjetfB
+#
+# | "Obrigado por utilizar nosso script" ~ Purple Scripts 2019
+#
+
+#<--------------------------------------------------------------------| Code ~ Nao mexer please |--------------------------------------------------------------------/>
+
+#<---------->
+#  Functions
+#	<---------->
+
+#| Functions Update Checker
+
+options:
+    version: 1.0
+    endereco: At7EPF3E
+
+function isVersion(n: number) :: boolean:
+	set {_versao} to line 1 from url "https://pastebin.com/raw/{@endereco}" parsed as number
+	if {_versao} is not {_n}:
+		return false
+	return true
+
+function isAutoUpdate(n: number) :: boolean:
+	return yaml value "Updates.autoUpdate" from "essentials_config"
+
+function getVersion(n: number = 1) :: text:
+	return line 1 from url "https://pastebin.com/raw/{@endereco}"
+
+function getDate(n: number = 1) :: text:
+	return line 2 from url "https://pastebin.com/raw/{@endereco}"
+
+function getDownload(n: number = 1) :: text:
+	return line 3 from url "https://pastebin.com/raw/{@endereco}"
+
+function updateScript(n: number = 1):
+	send "" to console
+	send "&8| &7Iniciando atualizacao do script..." to console
+	download file from "%getDownload()%" to file "plugins/Skript/scripts/PEssentials%getVersion()%.sk"
+	send "" to console
+	send "&8| &dDownload concluido" to console
+	send "" to console
+	make console execute command "sk disable PEssentials{@version}"
+	send "&8| &dInstalacao concluida" to console
+	send "" to console
+	send "&8| &7A atualizacao foi &daplicada com sucesso&7, reiniciando todos os Scripts" to console
+	send "" to console
+	make console execute command "sk reload all"
+
+function updateCheck(n: number):
+	if yaml value "Updates.checker" from "essentials_config" is true:
+		if isVersion({_n}) is false:
+			send "&8| &7Uma nova atualizacao do script esta disponivel: &d%getVersion()%" to console
+			send "&8| &7Lancada em: &d%getDate()%" to console
+			if yaml value "Updates.autoUpdate" from "essentials_config" is true:
+				updateScript()
+			else:
+				send "&8| &7Baixe aqui: &dhttps://discord.gg/SCjetfB" to console
+				send "&8| &7Ou ative o auto-update na config.yml" to console
+			send " " to console
+
+function updateCheckPlayer(n: number,p: player):
+	if yaml value "Updates.checker" from "essentials_config" is true:
+		if isVersion({_n}) is false:
+			send " " to {_p}
+			send "&5&lPEssentials&8&l: &7Uma nova atualizacao do script esta disponivel: &d%getVersion()%" to {_p}
+			send "&5&lPEssentials&8&l: &7Lancada em: &d%getDate()%" to {_p}
+			if yaml value "Updates.autoUpdate" from "essentials_config" is false:
+				send "&5&lPEssentials&8&l: &7Baixe aqui: &dhttps://discord.gg/SCjetfB" to {_p}
+			else:
+				send "&5&lPEssentials&8&l: &7Utilize &d/essentials reload&7, ou aguarde o &dauto-update" to {_p}
+			send " " to {_p}
+
+# | Functions
+
+function isLogs(t: text) :: boolean:
+	yaml value "Logs.active" from "essentials_config" = true:
+		yaml value "Logs.%{_t}%" from "essentials_config" = true:
+			return true
+	return false
+
+function log(t: text):
+	wf "[%now%] %{_t}%" to "plugins/PurpleEssentials/logs.txt"
+
+function sendError(t: text):
+	send " " to console
+	send "&8| &5PEssentials &c&lERROR &8-> &7%{_t}%" to console
+	send " " to console
+
+function send(p: player,t: text):
+	send "" to {_p}
+	send "%{_t}%" to {_p}
+	send "" to {_p}
+
+# | MySQL
+
+function checkError(n: number = 1):
+	set {_error} to last sql error
+	if {_error} is set:
+		sendError({_error})
+
+function execute(t: text):
+	execute "%{_t}%" in {sql}
+	checkError()
+
+function getHost(n: number = 1) :: text:
+	return yaml value "MySQL.host" from "essentials_config"
+
+function getPort(n: number = 1) :: number:
+	return yaml value "MySQL.port" from "essentials_config"
+
+function getDatabase(n: number = 1) :: text:
+	return yaml value "MySQL.database" from "essentials_config"
+
+function getUser(n: number = 1) :: text:
+	return yaml value "MySQL.user" from "essentials_config"
+
+function getPassword(n: number = 1) :: text:
+	return yaml value "MySQL.password" from "essentials_config"
+
+function getSSL(n: number = 1) :: boolean:
+	return yaml value "MySQL.ssl" from "essentials_config"
+
+# | Getters
+
+# | Setters
+
+#<---------->
+#  Load e Update Check
+#	<---------->
+
+every 6 hours:
+	updateCheck({@version})
+
+on load:
+
+	#| Msgs
+	send " " to console
+	send "&8|&5  ___ ___                _   _      _    " to console
+	send "&8|&5 | _ \ __|______ ___ _ _| |_(_)__ _| |___" to console
+	send "&8|&5 |  _/ _|(_-<_-</ -_) ' \  _| / _` | (_-<" to console
+	send "&8|&5 |_| |___/__/__/\___|_||_\__|_\__,_|_/__/" to console
+	send "&8| &7Carregado com &dsucesso" to console
+	send "&8| &7Criado por: &dPurple Scripts &f(&5https://discord.gg/SCjetfB&f)" to console
+	send "&8| &7Versao: &d1.0" to console
+	send " " to console
+	updateCheck({@version})
+
+	#| Yaml
+	load yaml "plugins/PurpleEssentials/config.yml" as "essentials_config"
+	load yaml "plugins/PurpleEssentials/locations.yml" as "essentials_locations"
+	load yaml "plugins/PurpleEssentials/messages.yml" as "essentials_messages"
+	set yaml value "Updates.version" from "essentials_config" to "{@version}"
+	save yaml "essentials_config"
+	if yaml "essentials_config" is empty:
+		set the comments at the top of "essentials_config" to "" and "  ___ ___                _   _      _    " and " | _ \ __|______ ___ _ _| |_(_)__ _| |___" and " |  _/ _|(_-<_-</ -_) ' \  _| / _` | (_-<" and " |_| |___/__/__/\___|_||_\__|_\__,_|_/__/" and "| Arquivo de mensagens" and ""
+		set yaml value "MySQL.host" from "essentials_config" to "localhost"
+		set yaml value "MySQL.port" from "essentials_config" to "3306"
+		set yaml value "MySQL.database" from "essentials_config" to "server"
+		set yaml value "MySQL.user" from "essentials_config" to "usuario"
+		set yaml value "MySQL.password" from "essentials_config" to "senha"
+		set yaml value "MySQL.ssl" from "essentials_config" to "false"
+		set yaml value "Logs.active" from "essentials_config" to "true"
+		set yaml value "Logs.commands" from "essentials_config" to "true"
+		set yaml value "Logs.chat" from "essentials_config" to "true"
+		set yaml value "Logs.join-quit" from "essentials_config" to "true"
+		set yaml value "Updates.checker" from "essentials_config" to "true"
+		set yaml value "Updates.autoUpdate" from "essentials_config" to "true"
+		save yaml "essentials_config"
+
+	#| Logs
+
+	if file "plugins/PurpleEssentials/logs.txt" doesn't exist:
+		create file "plugins/PurpleEssentials/logs.txt"
+	
+	#| MySQL
+	set {sql} to the database "mysql://%getHost()%:%getPort()%/%getDatabase()%?user=%getUser()%&password=%getPassword()%&useSSL=%getSSL()%"
+
+#<---------->
+#  Comandos
+#	<---------->
+
+#| Spawn
+
+command /setspawn:
+	trigger:
+		if player has permission "pessentials.admin.setspawn":
+			set yaml value "Sets.spawn" from "essentials_locations" to "%location of player%"
+			save yaml "essentials_locations"
+		else:
+
+
+#<---------->
+#  Eventos
+#	<---------->
+
+#| Logs
+
+on command:
+	if isLogs("commands") is true:
+		if player is not set:
+			log("(Console) utilizou o comando | [%full command%]")
+		else:
+			log("(%player%) utilizou o comando | [%full command%]")
+
+on chat:
+	if isLogs("chat") is true:
+		log("(%player%) -> %message%")
+
+on join:
+	if isLogs("join-quit") is true:
+		log("(%player%) -> Entrou no servidor (%size of all players% online)")
+
+on quit:
+	if isLogs("join-quit") is true:
+		log("(%player%) -> Saiu do servidor (%size of all players% online)")
